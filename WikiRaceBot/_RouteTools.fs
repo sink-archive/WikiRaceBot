@@ -1,6 +1,5 @@
 module WikiRaceBot._RouteTools
 
-open System.Buffers.Text
 open WikiRaceBot._WikiParser
 
 let genRoute (cmdArgs: string []) =
@@ -17,20 +16,35 @@ let genRoute (cmdArgs: string []) =
     
     (route, sw.Elapsed.TotalSeconds)
 
-let private encodeUrl (url: string) =
-    let plainTextBytes = System.Text.Encoding.UTF8.GetBytes url
-    System.Convert.ToBase64String plainTextBytes
+let private strToBytes (str: string) = System.Text.Encoding.UTF8.GetBytes str
 
-let private decodeUrl base64 =
-    let plainTextBytes = System.Convert.FromBase64String base64
-    System.Text.Encoding.UTF8.GetString plainTextBytes
+let private bytesToStr base64 = System.Convert.FromBase64String base64
 
 let encodeRoute route =
-    (route
-    |> List.map encodeUrl
-    |> List.fold (fun current next -> current + "_" + next) "").[1..]
+    let routeBytes = route
+                     |> List.map strToBytes
+    let joinedBytes = routeBytes
+                      |> List.fold (fun current next -> current @ [byte 0] @ (next |> Array.toList)) []
+    
+    let compressor = new ZstdNet.Compressor()
+    let compressed = compressor.Wrap (joinedBytes |> List.toArray)
+    System.Convert.ToBase64String compressed
 
-let decodeRoute (route: string) =
-    route.Split '_'
-    |> Array.toList
-    |> List.map decodeUrl
+let splitByNulls bytes =
+    let rec splitAtIndexes indexes list =
+        match indexes with
+        | [] -> ()
+        | _ -> ()
+    
+    let nullIndexes = bytes
+                      |> List.mapi (fun i b -> if b = 0 then Some(i) else None)
+                      |> List.choose id
+    
+    splitAtIndexes nullIndexes
+
+let decodeRoute route =
+    let compressed = System.Convert.FromBase64String route
+    
+    let decompressor = new ZstdNet.Decompressor()
+    let decompressed = decompressor.Unwrap compressed
+    []

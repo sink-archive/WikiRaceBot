@@ -14,6 +14,7 @@
     <ItemGroup>
       <PackageReference Include="Discord.Net" Version="2.4.0" />
       <PackageReference Include="HtmlAgilityPack" Version="1.11.36" />
+      <PackageReference Include="ZstdNet" Version="1.4.5" />
     </ItemGroup>
 
 </Project>
