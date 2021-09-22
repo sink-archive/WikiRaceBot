@@ -4,7 +4,7 @@ open System
 open System.Threading.Tasks
 open Discord
 open Discord.WebSocket
-open WikiRaceBot._WikiParser
+open WikiRaceBot._RouteTools
 
 // helper func for awaiting System.Threading.Task objects
 let await (task: Task) = task |> Async.AwaitTask |> Async.RunSynchronously
@@ -21,19 +21,23 @@ let msgReceived (client: DiscordSocketClient) (msg: SocketMessage) =
     if msg.Author.Id <> client.CurrentUser.Id then
         if msg.Content.StartsWith "%genroute" then
             let cmdArgs = msg.Content.[9..].Trim().Split(' ') // trim command off the start
-            let url = cmdArgs.[1]
-            let depth = int cmdArgs.[0]
-            let unFormattedUrl =
-                if url.StartsWith '<' && url.EndsWith '>' then
-                    url.[1..url.Length - 2]
-                else
-                    url
-            let sw = System.Diagnostics.Stopwatch.StartNew()
-            let route = findRoute depth unFormattedUrl
-            sw.Stop()
-            let joined = route |> List.fold (fun current next -> $"%s{current}\n<%s{next}>") ""
-            await <| msg.Channel.SendMessageAsync ($"Generated route with depth %i{depth} in %f{sw.Elapsed.TotalSeconds}s:" + joined)
-    
+            
+            let route, elapsed = genRoute cmdArgs
+            
+            let encoded = encodeRoute route
+            let msgText = @$"Generated route with depth %i{route.Length} in %f{elapsed}s:
+Your start point: <%s{route.Head}>
+Your end point: <%s{route.[route.Length - 1]}>
+Your route code: `%s{encoded}`"
+            
+            await <| msg.Channel.SendMessageAsync msgText
+
+        else if msg.Content.StartsWith "%showroute" then
+            let encoded = msg.Content.[10..].Trim()
+            let decoded = decodeRoute encoded
+            let joined = decoded |> List.fold (fun current next -> $"%s{current}\n<%s{next}>") ""
+            await <| msg.Channel.SendMessageAsync joined
+
     Task.CompletedTask
 
 let ready (client: DiscordSocketClient) () =

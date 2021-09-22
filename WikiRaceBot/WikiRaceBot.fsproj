@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Compile Include="_WikiParser.fs" />
+        <Compile Include="_RouteTools.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
