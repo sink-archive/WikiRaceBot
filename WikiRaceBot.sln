@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WikiRaceBot", "WikiRaceBot\WikiRaceBot.fsproj", "{28F53AD4-7A94-45AE-A18B-FE805EED3703}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28F53AD4-7A94-45AE-A18B-FE805EED3703}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F53AD4-7A94-45AE-A18B-FE805EED3703}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F53AD4-7A94-45AE-A18B-FE805EED3703}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F53AD4-7A94-45AE-A18B-FE805EED3703}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
