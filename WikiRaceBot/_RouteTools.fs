@@ -27,24 +27,18 @@ let encodeRoute route =
                       |> List.fold (fun current next -> current @ [byte 0] @ (next |> Array.toList)) []
     
     let compressor = new ZstdNet.Compressor()
-    let compressed = compressor.Wrap (joinedBytes |> List.toArray)
+    let compressed = compressor.Wrap (joinedBytes.Tail |> List.toArray)
     System.Convert.ToBase64String compressed
 
-let splitByNulls bytes =
-    let rec splitAtIndexes indexes list =
-        match indexes with
-        | [] -> ()
-        | _ -> ()
-    
-    let nullIndexes = bytes
-                      |> List.mapi (fun i b -> if b = 0 then Some(i) else None)
-                      |> List.choose id
-    
-    splitAtIndexes nullIndexes
+
+let splitByNulls (strBytes: byte []) =
+    let str = System.Text.Encoding.UTF8.GetString strBytes
+    let split = str.Split (char 0)
+    split |> Array.toList
 
 let decodeRoute route =
     let compressed = System.Convert.FromBase64String route
     
     let decompressor = new ZstdNet.Decompressor()
     let decompressed = decompressor.Unwrap compressed
-    []
+    splitByNulls decompressed

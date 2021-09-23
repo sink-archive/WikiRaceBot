@@ -8,6 +8,7 @@ open WikiRaceBot._RouteTools
 
 // helper func for awaiting System.Threading.Task objects
 let await (task: Task) = task |> Async.AwaitTask |> Async.RunSynchronously
+let awaitResult task = task |> Async.AwaitTask |> Async.RunSynchronously
 
 
 let log (msg: LogMessage) =
@@ -22,6 +23,8 @@ let msgReceived (client: DiscordSocketClient) (msg: SocketMessage) =
         if msg.Content.StartsWith "%genroute" then
             let cmdArgs = msg.Content.[9..].Trim().Split(' ') // trim command off the start
             
+            let message = awaitResult <| msg.Channel.SendMessageAsync "generating route..."
+            
             let route, elapsed = genRoute cmdArgs
             
             let encoded = encodeRoute route
@@ -30,13 +33,19 @@ Your start point: <%s{route.Head}>
 Your end point: <%s{route.[route.Length - 1]}>
 Your route code: `%s{encoded}`"
             
-            await <| msg.Channel.SendMessageAsync msgText
+            await <| message.ModifyAsync (fun m -> m.Content <- Optional(msgText))
 
         else if msg.Content.StartsWith "%showroute" then
             let encoded = msg.Content.[10..].Trim()
             let decoded = decodeRoute encoded
             let joined = decoded |> List.fold (fun current next -> $"%s{current}\n<%s{next}>") ""
-            await <| msg.Channel.SendMessageAsync joined
+            let msgText =
+                if joined.Length > 2000 then
+                    "Route is > 200 characters, cannot send as a Discord message"
+                else
+                    joined
+            
+            await <| msg.Channel.SendMessageAsync msgText
 
     Task.CompletedTask
 
